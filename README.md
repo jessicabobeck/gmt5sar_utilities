@@ -1,2 +1,2 @@
-# gmt5sar_utilities-
+# gmt5sar_utilities
 Utility Scripts for GMT5SAR.
