@@ -35,6 +35,7 @@ USAGE:
 import itertools as it
 import sys
 import matplotlib.pyplot as plt
+from matplotlib import rc
 import matplotlib.cm as cmx
 import matplotlib.colors as colors
 import numpy as np
@@ -76,7 +77,8 @@ def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
         date.append(int(new[1][0:7]))
         base.append(float(new[4]))
     
-    data = zip(date,base)
+    data = zip(date,base,ids)
+
     #sort by baseline
     data.sort(key=lambda a:a[1])
     
@@ -96,27 +98,51 @@ def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
 
     comb = []
     for j in range(len(groups)):
-        print it.combinations(groups[j], 2)
-#        comb.append(list(set(it.combinations(groups[j], 2))))
+        comb.append(list(set(it.combinations(groups[j], 2))))
         
     #plot
+        
+    rc('xtick', labelsize=20) 
+    rc('ytick', labelsize=20)
+    rc('lines', linewidth=3)
     fig1 = plt.figure(figsize=(22,18))
     ax = fig1.add_subplot(111)
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    ax.scatter(date,base,s=200)
+    ax.set_xlabel('Year',fontsize=25)
+    ax.set_ylabel('Baseline (m)',fontsize=25)
     
-    cmap = get_cmap(len(groups))
-    for j in range(len(groups)):
-        ax.plot(
-        *zip(*it.chain.from_iterable(it.combinations(groups[j], 2))),
-        color=cmap(j), marker = 'o')
-    for i in range(len(date)):
-        ax.scatter(date[i],base[i])
-        plt.annotate(ids[i],(date[i],base[i]))
+
+    for i in range(len(comb)):
+        for j in range(len(comb[i])):
+            x = []
+            y = []
+            x.append(comb[i][j][0][0])
+            x.append(comb[i][j][1][0])
+            
+            y.append(comb[i][j][0][1])
+            y.append(comb[i][j][1][1])
+            
+            plt.annotate(comb[i][j][0][2], (x[0], y[0]),fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+            plt.annotate(comb[i][j][1][2], (x[1], y[1]),fontsize=16,horizontalalignment='left', verticalalignment='top')
+            
+            ax.plot(x,y, c=np.random.rand(3,1))
+
+    plt.savefig('baseline_alignPairs.png', dpi=300)
+            
+            
+        
+        
+        
+        
+        
+        
+#        ax.scatter(date[i],base[i])
+#        ax.plot(data[i],base[i])
+#        plt.annotate(ids[i],(date[i],base[i]))
 
         
-#        for j in range(len(comb[i])):
-#            x = comb[i][j][1]
-##            ax.plot(comb[i],j[2], c=color(i))
+
     
 #    
 #    #LEAPFROG--------------------------------
