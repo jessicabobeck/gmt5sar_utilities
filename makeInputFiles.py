@@ -32,8 +32,26 @@ USAGE:
 	#running intf script
 		intf_batch.csh ALOS intf.in intf.config
 """
-from itertools import combinations
+import itertools as it
 import sys
+import matplotlib.pyplot as plt
+import matplotlib.cm as cmx
+import matplotlib.colors as colors
+import numpy as np
+
+
+def get_cmap(N):
+    '''Returns a function that maps each index in 0, 1, ... N-1 to a distinct 
+    RGB color.'''
+    color_norm  = colors.Normalize(vmin=0, vmax=N-1)
+    scalar_map = cmx.ScalarMappable(norm=color_norm, cmap='hsv') 
+    def map_index_to_rgb_color(index):
+        return scalar_map.to_rgba(index)
+    return map_index_to_rgb_color
+
+
+
+
 table = 'baseline_table.dat'
 master = 'IMG-HH-ALPSRP052541220-H1.0__A'
 sat = 'ALOS'
@@ -55,32 +73,53 @@ def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
     for i in range(len(lines)):
         new = lines[i].split()
         ids.append(new[0])
-        date.append(new[1][0:7])
+        date.append(int(new[1][0:7]))
         base.append(float(new[4]))
     
-    data = zip(ids,date,base)
+    data = zip(date,base)
     #sort by baseline
-    data.sort(key=lambda a:a[2])
+    data.sort(key=lambda a:a[1])
     
     #--------------------------Algorithm---------------------------------------------
     
-    #BASELINE
+    #BASELINE---------------------------------
     if algorithm == 'baseline':
         groups = [[]]
         last_row = None
         for row in data:
             #sort into groups by threshold
-            if last_row is not None and row[2] - last_row[2] > prim_base:
+            if last_row is not None and row[1] - last_row[1] > prim_base:
                 groups.append([])
             last_row = row
             groups[-1].append(row)
             
 
-        for i in range(len(g)):
-#            for k in 
-#            groups.append(list(set(combinations(ids, 2))))
+    comb = []
+    for j in range(len(groups)):
+        print it.combinations(groups[j], 2)
+#        comb.append(list(set(it.combinations(groups[j], 2))))
+        
+    #plot
+    fig1 = plt.figure(figsize=(22,18))
+    ax = fig1.add_subplot(111)
+    ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    
+    cmap = get_cmap(len(groups))
+    for j in range(len(groups)):
+        ax.plot(
+        *zip(*it.chain.from_iterable(it.combinations(groups[j], 2))),
+        color=cmap(j), marker = 'o')
+    for i in range(len(date)):
+        ax.scatter(date[i],base[i])
+        plt.annotate(ids[i],(date[i],base[i]))
+
+        
+#        for j in range(len(comb[i])):
+#            x = comb[i][j][1]
+##            ax.plot(comb[i],j[2], c=color(i))
+    
 #    
-#    #LEAPFROG
+#    #LEAPFROG--------------------------------
 #    elif algorithm == 'leapfrog':
 #        #primary
 #        primary = []
@@ -118,7 +157,7 @@ def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
 #        groups = []
 #        groups.append(primary,secondary,tertiary)
 #        
-#    #ALL
+#    #ALL------------------------------------------
 #    else:
 #        for row in data:
 #        pass
