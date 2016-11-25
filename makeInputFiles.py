@@ -163,8 +163,8 @@ if algorithm == 'leapfrog':
                 #sort secondary pairs into groups by threshold distance and year   
                 if row[1] > (img[1] - sec_base) and row[1] < (img[1] + sec_base):
                     if abs(int(row[0][0:4]) - int(img[0][0:4])) <= sec_year and row[1] != img[1] and row[1] != 0:
-                        print img[1], row[1]
-                        temp.append(row) 
+                        if row not in primary:
+                            temp.append(row) 
             secondary.append(temp)
                     
     #tertiary
@@ -173,18 +173,16 @@ if algorithm == 'leapfrog':
         sys.exit('makeInputFiles Error: There is only 1 secondary image (submaster). Adjust thresholds.')
     else:
         for group in secondary:
-            temp = []
             for img in range(len(group)):
+                temp = []
                 for row in data:
                     #sort secondary pairs into groups by threshold distance and year
-                    if row[1] > (group[img][1] - ter_base) and row[1] < (group[img][1] + ter_base) and row[1] != group[img][1] and row[1] != 0:
+                    if row[1] > (group[img][1] - ter_base) and row[1] < (group[img][1] + ter_base) and row[1] != 0:
                         if abs(int(row[0][0:4]) - int(group[img][0][0:4])) <= ter_year:
-                            print group[img][1], row[0]
-                            temp.append(row)
+                            if row not in primary and row not in secondary:
+                                temp.append(row)
                 tertiary.append(temp)
                 
-#    groups = []
-#    groups.append(primary,secondary,tertiary)
 
     mx = master[0]
     my = master[1] 
@@ -223,12 +221,53 @@ if algorithm == 'leapfrog':
     ax.set_xlabel('Year',fontsize=25)
     ax.set_ylabel('Baseline (m)',fontsize=25)
     ax.set_title('Leapfrog Method', fontsize=32)
+        
+    for p in range(len(primary)):
+        x=[]
+        y=[]
+        
+        x.append(mx)
+        x.append(primary[p][0])        
+        
+        y.append(my)
+        y.append(primary[p][1])
+        
+        ax.plot(x,y, c='r', zorder=3)
+        
+        count = 0
+        for s in range(len(secondary)):
+            if s == p:
+                for i in range(len(secondary[s])):
+                    x=[]
+                    y=[]
+                    x.append(primary[p][0])
+                    x.append(secondary[s][i][0])
+                    
+                    y.append(primary[p][1])
+                    y.append(secondary[s][i][1])
+                    
+                    ax.plot(x,y, c='y', zorder=2)
+                    
+                    count = count + 1
+                    for t in range(len(tertiary)):
+                        if count == t:
+                            for j in range(len(tertiary[t])):
+                                x=[]
+                                y=[]
+                                x.append(secondary[s][i][0])
+                                x.append(tertiary[t][j][0])
+                                
+                                y.append(secondary[s][i][1])
+                                y.append(tertiary[t][j][1])
+                                
+                                ax.plot(x,y, c='g', zorder=1)
+                
     
-#    ax.scatter(date,base, s=150, c='k')
-    ax.scatter(tx,ty, s=150, c='g')
-    ax.scatter(sx,sy,s=150, c='y')
-    ax.scatter(px,py,s=150, c='r')
-    ax.scatter(mx,my,s=150, c='b', marker='*')
+    ax.scatter(tx,ty, s=150, c='g', zorder=4)
+    ax.scatter(sx,sy,s=150, c='y', zorder=4)
+    ax.scatter(px,py,s=150, c='r', zorder=4)
+    ax.scatter(mx,my,s=300, c='b', marker='*' , zorder=4)
+            
 
     
     
