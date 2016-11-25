@@ -43,9 +43,9 @@ import numpy as np
 
 
 table = 'baseline_table_thesis.dat'
-#master = 'IMG-HH-ALPSRP052541220-H1.0__A'
+master = 'IMG-HH-ALPSRP052541220-H1.0__A'
 sat = 'ALOS'
-algorithm = 'leapfrog'
+algorithm = 'baseline'
 prim_base = 1000
 prim_year =2
 sec_base = 1500
@@ -55,6 +55,21 @@ ter_year = 10
 
 #def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
      #              sec_base=1500, sec_year=1, ter_base=500, ter_year=2):
+#---------------------sat type-------------------------------------------------
+if sat == 'ALOS':
+    stem = master[0:13]
+    end = master[18:]
+
+elif sat == 'ENVI':
+    pass
+#not done yet
+    
+elif sat == 'ERS':
+    pass
+#not done yet
+
+else:
+    sys.exit('Not a valid sat input: Please choose from ALOS, ENVI, or S1A')
 
     #open table
 with open(table) as f:
@@ -80,64 +95,64 @@ data.sort(key=lambda a:a[1])
 
 for row in data:
     if row[1] == 0:
-        master = row
+        m = row
 
 #--------------------------Algorithm---------------------------------------------
 
 #BASELINE---------------------------------
-#if algorithm == 'baseline':
-#    groups = [[]]
-#    last_row = None
-#    for row in data:
-#        #sort into groups by threshold
-#        if last_row is not None and row[1] - last_row[1] > prim_base:
-#            groups.append([])
-#        last_row = row
-#        groups[-1].append(row)
-#        
-#
-#comb = []
-#for j in range(len(groups)):
-#    comb.append(list(set(it.combinations(groups[j], 2))))
-#    
-##plot
-#    
-#rc('xtick', labelsize=20) 
-#rc('ytick', labelsize=20)
-#rc('lines', linewidth=3)
-#fig1 = plt.figure(figsize=(22,18))
-#ax = fig1.add_subplot(111)
-#ax.get_xaxis().get_major_formatter().set_useOffset(False)
-#ax.scatter(date,base,s=200)
-#ax.set_xlabel('Year',fontsize=25)
-#ax.set_ylabel('Baseline (m)',fontsize=25)
-# ax.set_title('Baseline Method')
-#
-#labels = []
-#for i in range(len(comb)):
-#    for j in range(len(comb[i])):
-#        x = []
-#        y = []
-#        x.append(comb[i][j][0][0])
-#        x.append(comb[i][j][1][0])
-#        
-#        y.append(comb[i][j][0][1])
-#        y.append(comb[i][j][1][1])
-#        
-#        if comb[i][j][0][2] not in labels:
-#            plt.annotate(comb[i][j][0][2], (x[0], y[0]),fontsize=16,horizontalalignment='right', verticalalignment='bottom')
-#
-#        labels.append(comb[i][j][0][2])
-#            
-#        if comb[i][j][1][2] not in labels:
-#            plt.annotate(comb[i][j][1][2], (x[1], y[1]),fontsize=16,horizontalalignment='left', verticalalignment='top') 
-#        
-#        labels.append(comb[i][j][1][2])
-#        
-#        ax.plot(x,y, c=np.random.rand(3,1))   
-#        
-#
-#plt.savefig('baseline_alignPairs.png', dpi=300)
+if algorithm == 'baseline':
+    groups = [[]]
+    last_row = None
+    for row in data:
+        #sort into groups by threshold
+        if last_row is not None and row[1] - last_row[1] > prim_base:
+            groups.append([])
+        last_row = row
+        groups[-1].append(row)
+        
+
+    comb = []
+    for j in range(len(groups)):
+        comb.append(list(set(it.combinations(groups[j], 2))))
+        
+    #plot
+        
+    rc('xtick', labelsize=20) 
+    rc('ytick', labelsize=20)
+    rc('lines', linewidth=3)
+    fig1 = plt.figure(figsize=(22,18))
+    ax = fig1.add_subplot(111)
+    ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    ax.scatter(date,base,s=200, zorder=2)
+    ax.set_xlabel('Year',fontsize=25)
+    ax.set_ylabel('Baseline (m)',fontsize=25)
+    ax.set_title('Baseline Method')
+    
+    labels = []
+    for i in range(len(comb)):
+        for j in range(len(comb[i])):
+            x = []
+            y = []
+            x.append(comb[i][j][0][0])
+            x.append(comb[i][j][1][0])
+            
+            y.append(comb[i][j][0][1])
+            y.append(comb[i][j][1][1])
+            
+            if comb[i][j][0][2] not in labels:
+                plt.annotate(comb[i][j][0][2], (x[0], y[0]),fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+    
+            labels.append(comb[i][j][0][2])
+                
+            if comb[i][j][1][2] not in labels:
+                plt.annotate(comb[i][j][1][2], (x[1], y[1]),fontsize=16,horizontalalignment='left', verticalalignment='top') 
+            
+            labels.append(comb[i][j][1][2])
+            
+            ax.plot(x,y, c=np.random.rand(3,1), zorder=1)   
+            
+    
+    plt.savefig('baseline_alignPairs.png', dpi=300)
               
 #    #LEAPFROG--------------------------------
 if algorithm == 'leapfrog':
@@ -148,7 +163,7 @@ if algorithm == 'leapfrog':
     for row in data:
         #sort primary pairs into groups by threshold distance and year
         if abs(row[1]) < prim_base:
-            if abs(int(row[0][0:4]) - int(master[0][0:4]))  < prim_year and row[1] != 0:
+            if abs(int(row[0][0:4]) - int(m[0][0:4]))  < prim_year and row[1] != 0:
                 primary.append(row)  
 
     
@@ -184,8 +199,8 @@ if algorithm == 'leapfrog':
                 tertiary.append(temp)
                 
 
-    mx = master[0]
-    my = master[1] 
+    mx = m[0]
+    my = m[1] 
 
         
     px = []
@@ -214,9 +229,8 @@ if algorithm == 'leapfrog':
     rc('xtick', labelsize=20) 
     rc('ytick', labelsize=20)
     rc('lines', linewidth=3)
-    fig1 = plt.figure(figsize=(7,5))
+    fig1 = plt.figure(figsize=(22,18))
     ax = fig1.add_subplot(111)
-#    plt.setp(ax, xticks=)
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     ax.set_xlabel('Year',fontsize=25)
     ax.set_ylabel('Baseline (m)',fontsize=25)
@@ -234,6 +248,9 @@ if algorithm == 'leapfrog':
         
         ax.plot(x,y, c='r', zorder=3)
         
+        plt.annotate(m[2], (x[0], y[0]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+        plt.annotate(primary[p][2], (x[1], y[1]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+        
         count = 0
         for s in range(len(secondary)):
             if s == p:
@@ -248,6 +265,8 @@ if algorithm == 'leapfrog':
                     
                     ax.plot(x,y, c='y', zorder=2)
                     
+                    plt.annotate(secondary[s][i][2], (x[1], y[1]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+                    
                     count = count + 1
                     for t in range(len(tertiary)):
                         if count == t:
@@ -261,40 +280,62 @@ if algorithm == 'leapfrog':
                                 y.append(tertiary[t][j][1])
                                 
                                 ax.plot(x,y, c='g', zorder=1)
-                
+                                
+                                plt.annotate(tertiary[t][j][2], (x[1], y[1]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
     
     ax.scatter(tx,ty, s=150, c='g', zorder=4)
     ax.scatter(sx,sy,s=150, c='y', zorder=4)
     ax.scatter(px,py,s=150, c='r', zorder=4)
     ax.scatter(mx,my,s=300, c='b', marker='*' , zorder=4)
+    
+    plt.savefig('leapfrog_alignPairs.png', dpi=300)
+             
+
+
+    #ALL------------------------------------------
+elif algorithm == 'all':
+    comb = list(set(it.combinations(data, 2)))
+    
+    #plot
+    rc('xtick', labelsize=20) 
+    rc('ytick', labelsize=20)
+    rc('lines', linewidth=3)
+    fig1 = plt.figure(figsize=(22,18))
+    ax = fig1.add_subplot(111)
+    ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    ax.set_xlabel('Year',fontsize=25)
+    ax.set_ylabel('Baseline (m)',fontsize=25)
+    ax.set_title('All Method', fontsize=32)
+    
+    labels = []
+    for i in range(len(comb)):
+        x=[]
+        y=[]
+        
+        x.append(comb[i][0][0])
+        x.append(comb[i][1][0])
+        
+        y.append(comb[i][0][1])
+        y.append(comb[i][1][1])        
+        
+        if comb[i][0][2] not in labels:
+                plt.annotate(comb[i][0][2], (x[0], y[0]),fontsize=16, horizontalalignment='left', verticalalignment='top') 
+            
+        labels.append(comb[i][0][2])        
+        
+        if comb[i][1][2] not in labels:
+                plt.annotate(comb[i][1][2], (x[1], y[1]),fontsize=16, horizontalalignment='left', verticalalignment='top') 
+            
+        labels.append(comb[i][1][2])
+        
+        ax.plot(x,y, c=np.random.rand(3,1), zorder=1)
+    
+    ax.scatter(date,base, s=200, zorder=2)
+    
+    plt.savefig('all_alignPairs.png', dpi=300)
+        
             
 
-    
-    
-
-
-#    #ALL------------------------------------------
-#    else:
-#        for row in data:
-#        pass
-#            
-#    
-#    
-#    #---------------------sat type-------------------------------------------------
-#    if sat == 'ALOS':
-#        stem = master[0:13]
-#        end = master[18:]
-#    
-#    elif sat == 'ENVI':
-#        pass
-#    #not done yet
-#        
-#    elif sat == 'S1A':
-#        pass
-#    #not done yet
-#    
-#    else:
-#        sys.exit('Not a valid sat input: Please choose from ALOS, ENVI, or S1A')
 #        
 #    #-----------------------Making files---------------------------------------------
 #    align = open('align.in', 'w+')
