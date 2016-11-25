@@ -43,15 +43,15 @@ import numpy as np
 
 
 table = 'baseline_table_thesis.dat'
-master = 'IMG-HH-ALPSRP052541220-H1.0__A'
+#master = 'IMG-HH-ALPSRP052541220-H1.0__A'
 sat = 'ALOS'
 algorithm = 'leapfrog'
 prim_base = 1000
 prim_year =2
 sec_base = 1500
-sec_year = 1
-ter_base = 500
-ter_year = 2
+sec_year = 2
+ter_base = 5000
+ter_year = 10
 
 #def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
      #              sec_base=1500, sec_year=1, ter_base=500, ter_year=2):
@@ -77,6 +77,10 @@ data = zip(date,base,ids)
 
 #sort by baseline
 data.sort(key=lambda a:a[1])
+
+for row in data:
+    if row[1] == 0:
+        master = row
 
 #--------------------------Algorithm---------------------------------------------
 
@@ -141,17 +145,15 @@ if algorithm == 'leapfrog':
     
     #primary
     primary = []
-    last_row = None
     for row in data:
         #sort primary pairs into groups by threshold distance and year
-        if last_row is not None and abs(row[1]) < prim_base:
-            if abs(int(row[0][0:4]) - int(last_row[0][0:4])) < prim_year and row[1] != 0:
+        if abs(row[1]) < prim_base:
+            if abs(int(row[0][0:4]) - int(master[0][0:4]))  < prim_year and row[1] != 0:
                 primary.append(row)  
-        last_row = row
+
     
     #secondary        
     secondary = []
-    last_row = None
     if len(primary) == 0:
         sys.exit('makeInputFiles Error: There is only 1 primary image (supermaster). Adjust thresholds.')
     else:
@@ -159,15 +161,14 @@ if algorithm == 'leapfrog':
             temp = []
             for row in data:
                 #sort secondary pairs into groups by threshold distance and year   
-                if last_row is not None and abs(row[1]) < sec_base + img[1]:
-                    if abs(int(row[0][0:4]) - int(last_row[0][0:4])) < sec_year and row[1] != img[1] and row[1] != 0:
+                if row[1] > (img[1] - sec_base) and row[1] < (img[1] + sec_base):
+                    if abs(int(row[0][0:4]) - int(img[0][0:4])) <= sec_year and row[1] != img[1] and row[1] != 0:
+                        print img[1], row[1]
                         temp.append(row) 
-                last_row = row
             secondary.append(temp)
                     
     #tertiary
     tertiary = []
-    last_row = None
     if len(secondary) == 0:
         sys.exit('makeInputFiles Error: There is only 1 secondary image (submaster). Adjust thresholds.')
     else:
@@ -176,23 +177,19 @@ if algorithm == 'leapfrog':
             for img in range(len(group)):
                 for row in data:
                     #sort secondary pairs into groups by threshold distance and year
-                    if last_row is not None and abs(row[1]) > ter_base + group[img][1] and row[1] != group[img][0] and row[1] != 0:
-                        if abs(int(row[0][0:4]) - int(last_row[0][0:4])) > ter_year:
+                    if row[1] > (group[img][1] - ter_base) and row[1] < (group[img][1] + ter_base) and row[1] != group[img][1] and row[1] != 0:
+                        if abs(int(row[0][0:4]) - int(group[img][0][0:4])) <= ter_year:
+                            print group[img][1], row[0]
                             temp.append(row)
-                    last_row = row
                 tertiary.append(temp)
                 
 #    groups = []
 #    groups.append(primary,secondary,tertiary)
 
-    mx = []
-    my = [] 
-    for row in data:
-        if row[1] == 0:
-            mx.append(row[0])
-            my.append(row[1])
+    mx = master[0]
+    my = master[1] 
+
         
-    
     px = []
     py = []
     for data in primary:
@@ -219,18 +216,20 @@ if algorithm == 'leapfrog':
     rc('xtick', labelsize=20) 
     rc('ytick', labelsize=20)
     rc('lines', linewidth=3)
-    fig1 = plt.figure(figsize=(22,18))
+    fig1 = plt.figure(figsize=(7,5))
     ax = fig1.add_subplot(111)
-    plt.setp(ax, xticks=)
+#    plt.setp(ax, xticks=)
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     ax.set_xlabel('Year',fontsize=25)
     ax.set_ylabel('Baseline (m)',fontsize=25)
     ax.set_title('Leapfrog Method', fontsize=32)
-      
+    
+#    ax.scatter(date,base, s=150, c='k')
     ax.scatter(tx,ty, s=150, c='g')
     ax.scatter(sx,sy,s=150, c='y')
     ax.scatter(px,py,s=150, c='r')
     ax.scatter(mx,my,s=150, c='b', marker='*')
+
     
     
 
