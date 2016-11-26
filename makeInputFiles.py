@@ -36,8 +36,6 @@ import itertools as it
 import sys
 import matplotlib.pyplot as plt
 from matplotlib import rc
-import matplotlib.cm as cmx
-import matplotlib.colors as colors
 import numpy as np
 
 
@@ -45,7 +43,7 @@ import numpy as np
 table = 'baseline_table.dat'
 master = 'IMG-HH-ALPSRP052541220-H1.0__A'
 sat = 'ALOS'
-algorithm = 'leapfrog'
+algorithm = 'baseline'
 prim_base = 10000
 prim_year =2
 sec_base = 15000
@@ -157,10 +155,10 @@ if algorithm == 'baseline':
     align = open('align.in', 'w')
     intf = open('intf.in', 'w')
     
-    for pair in comb:
-        align.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + ':'
-        + master + '\n')  
-        intf.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + '\n')
+    for i in range(len(comb)):
+        for pair in comb[i]:
+            align.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + ':' + master + '\n')  
+            intf.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + '\n')
     align.close()       
     intf.close()
     
