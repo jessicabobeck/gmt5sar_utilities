@@ -42,20 +42,21 @@ import numpy as np
 
 
 
-table = 'baseline_table_thesis.dat'
+table = 'baseline_table.dat'
 master = 'IMG-HH-ALPSRP052541220-H1.0__A'
 sat = 'ALOS'
-algorithm = 'baseline'
-prim_base = 1000
+algorithm = 'leapfrog'
+prim_base = 10000
 prim_year =2
-sec_base = 1500
+sec_base = 15000
 sec_year = 2
-ter_base = 5000
-ter_year = 10
+ter_base = 50000
+ter_year = 1
 
 #def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
      #              sec_base=1500, sec_year=1, ter_base=500, ter_year=2):
-#---------------------sat type-------------------------------------------------
+
+'''*****************************-sat type-**********************************'''
 if sat == 'ALOS':
     stem = master[0:13]
     end = master[18:]
@@ -69,7 +70,7 @@ elif sat == 'ERS':
 #not done yet
 
 else:
-    sys.exit('Not a valid sat input: Please choose from ALOS, ENVI, or S1A')
+    sys.exit('Not a valid sat input: Please choose from ALOS, ENVI, or ERS')
 
     #open table
 with open(table) as f:
@@ -77,7 +78,7 @@ with open(table) as f:
 ids = []
 date = []
 base = []
-ticks = []
+
 
 
 #prepare data
@@ -85,9 +86,7 @@ for i in range(len(lines)):
     new = lines[i].split()
     ids.append(new[0])
     date.append(new[1][0:7])
-    ticks.append(new[1][0:4])
     base.append(float(new[4]))
-
 data = zip(date,base,ids)
 
 #sort by baseline
@@ -97,9 +96,9 @@ for row in data:
     if row[1] == 0:
         m = row
 
-#--------------------------Algorithm---------------------------------------------
+'''****************************-Algorithm-**********************************'''
 
-#BASELINE---------------------------------
+#-----------------------------BASELINE-----------------------------------------
 if algorithm == 'baseline':
     groups = [[]]
     last_row = None
@@ -110,13 +109,11 @@ if algorithm == 'baseline':
         last_row = row
         groups[-1].append(row)
         
-
     comb = []
     for j in range(len(groups)):
         comb.append(list(set(it.combinations(groups[j], 2))))
-        
-    #plot
-        
+
+    #____________________________plot__________________________________________ 
     rc('xtick', labelsize=20) 
     rc('ytick', labelsize=20)
     rc('lines', linewidth=3)
@@ -126,7 +123,7 @@ if algorithm == 'baseline':
     ax.scatter(date,base,s=200, zorder=2)
     ax.set_xlabel('Year',fontsize=25)
     ax.set_ylabel('Baseline (m)',fontsize=25)
-    ax.set_title('Baseline Method')
+    ax.set_title('Baseline Method', fontsize=32)
     
     labels = []
     for i in range(len(comb)):
@@ -140,30 +137,45 @@ if algorithm == 'baseline':
             y.append(comb[i][j][1][1])
             
             if comb[i][j][0][2] not in labels:
-                plt.annotate(comb[i][j][0][2], (x[0], y[0]),fontsize=16,horizontalalignment='right', verticalalignment='bottom')
-    
+                plt.annotate(comb[i][j][0][2], (x[0], y[0]),
+                             fontsize=16,horizontalalignment='right',
+                             verticalalignment='bottom')
             labels.append(comb[i][j][0][2])
                 
             if comb[i][j][1][2] not in labels:
-                plt.annotate(comb[i][j][1][2], (x[1], y[1]),fontsize=16,horizontalalignment='left', verticalalignment='top') 
-            
+                plt.annotate(comb[i][j][1][2], (x[1], y[1]),fontsize=16,
+                             horizontalalignment='left',
+                             verticalalignment='top') 
             labels.append(comb[i][j][1][2])
             
             ax.plot(x,y, c=np.random.rand(3,1), zorder=1)   
             
     
     plt.savefig('baseline_alignPairs.png', dpi=300)
-              
-#    #LEAPFROG--------------------------------
-if algorithm == 'leapfrog':
     
+    #_________________________Making files_____________________________________
+    align = open('align.in', 'w')
+    intf = open('intf.in', 'w')
+    
+    for pair in comb:
+        align.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + ':'
+        + master + '\n')  
+        intf.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + '\n')
+    align.close()       
+    intf.close()
+    
+    
+    
+              
+#----------------------------LEAPFROG------------------------------------------
+elif algorithm == 'leapfrog':
     
     #primary
     primary = []
     for row in data:
         #sort primary pairs into groups by threshold distance and year
         if abs(row[1]) < prim_base:
-            if abs(int(row[0][0:4]) - int(m[0][0:4]))  < prim_year and row[1] != 0:
+            if abs(int(row[0][0:4]) - int(m[0][0:4])) < prim_year and row[1] != 0:
                 primary.append(row)  
 
     
@@ -187,17 +199,16 @@ if algorithm == 'leapfrog':
     if len(secondary) == 0:
         sys.exit('makeInputFiles Error: There is only 1 secondary image (submaster). Adjust thresholds.')
     else:
-        for group in secondary:
-            for img in range(len(group)):
+        for s in range(len(secondary)):
+            for img in range(len(secondary[s])):
                 temp = []
                 for row in data:
                     #sort secondary pairs into groups by threshold distance and year
-                    if row[1] > (group[img][1] - ter_base) and row[1] < (group[img][1] + ter_base) and row[1] != 0:
-                        if abs(int(row[0][0:4]) - int(group[img][0][0:4])) <= ter_year:
-                            if row not in primary and row not in secondary:
+                    if row[1] > (secondary[s][img][1] - ter_base) and row[1] < (secondary[s][img][1] + ter_base) and row[1] != 0:
+                        if abs(int(row[0][0:4]) - int(secondary[s][img][0][0:4])) <= ter_year:
+                            if row not in primary and row not in secondary[s]:
                                 temp.append(row)
-                tertiary.append(temp)
-                
+                tertiary.append(temp)             
 
     mx = m[0]
     my = m[1] 
@@ -223,9 +234,7 @@ if algorithm == 'leapfrog':
             tx.append(data[row][0])
             ty.append(data[row][1])
             
-        
-#            
-#    ##plot
+    #______________________________plot________________________________________
     rc('xtick', labelsize=20) 
     rc('ytick', labelsize=20)
     rc('lines', linewidth=3)
@@ -248,8 +257,12 @@ if algorithm == 'leapfrog':
         
         ax.plot(x,y, c='r', zorder=3)
         
-        plt.annotate(m[2], (x[0], y[0]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
-        plt.annotate(primary[p][2], (x[1], y[1]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+        plt.annotate(m[2], (x[0], y[0]), fontsize=16,
+                     horizontalalignment='right',
+                     verticalalignment='bottom')
+        plt.annotate(primary[p][2], (x[1], y[1]), fontsize=16,
+                     horizontalalignment='right',
+                     verticalalignment='bottom')
         
         count = 0
         for s in range(len(secondary)):
@@ -265,9 +278,10 @@ if algorithm == 'leapfrog':
                     
                     ax.plot(x,y, c='y', zorder=2)
                     
-                    plt.annotate(secondary[s][i][2], (x[1], y[1]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+                    plt.annotate(secondary[s][i][2], (x[1], y[1]),
+                                 fontsize=16,horizontalalignment='right',
+                                 verticalalignment='bottom')
                     
-                    count = count + 1
                     for t in range(len(tertiary)):
                         if count == t:
                             for j in range(len(tertiary[t])):
@@ -281,7 +295,11 @@ if algorithm == 'leapfrog':
                                 
                                 ax.plot(x,y, c='g', zorder=1)
                                 
-                                plt.annotate(tertiary[t][j][2], (x[1], y[1]), fontsize=16,horizontalalignment='right', verticalalignment='bottom')
+                                plt.annotate(tertiary[t][j][2], (x[1], y[1]), 
+                                             fontsize=16,
+                                             horizontalalignment='right',
+                                             verticalalignment='bottom')
+                    count = count + 1
     
     ax.scatter(tx,ty, s=150, c='g', zorder=4)
     ax.scatter(sx,sy,s=150, c='y', zorder=4)
@@ -289,14 +307,38 @@ if algorithm == 'leapfrog':
     ax.scatter(mx,my,s=300, c='b', marker='*' , zorder=4)
     
     plt.savefig('leapfrog_alignPairs.png', dpi=300)
-             
+    
+    #_________________________Making files_____________________________________
+    count = 0 
+    check = []
+    align = open('align.in', 'w')
+    intf = open('intf.in', 'w')
+    for i in range(len(primary)):
+        align.write(master + ':' + stem + primary[i][2] + end + ':'
+        + master + '\n')  
+        intf.write(master + ':' + stem + primary[i][2] + end + '\n')
+        
+        for j in range(len(secondary[i])):
+            align.write(stem + primary[i][2] + end + ':' + stem + secondary[i][j][2] + end + ':'
+            + master + '\n')  
+            intf.write(stem + primary[i][2] + end + ':' + stem + secondary[i][j][2] + '\n')
+            if secondary[i][j] not in check:
+                check.append(secondary[i][j])
+                
+    for k in range(len(check)):
+        for l in range(len(tertiary[k])):
+            align.write(stem + check[k][2] + end + ':' + stem + tertiary[k][l][2] + end + ':' + master + '\n') 
+            intf.write(stem + check[k][2] + end + ':' + stem + tertiary[k][l][2] + end + '\n') 
+            
+    align.close()       
+    intf.close()
 
 
-    #ALL------------------------------------------
+#---------------------------------ALL------------------------------------------
 elif algorithm == 'all':
     comb = list(set(it.combinations(data, 2)))
     
-    #plot
+    #____________________________________plot__________________________________
     rc('xtick', labelsize=20) 
     rc('ytick', labelsize=20)
     rc('lines', linewidth=3)
@@ -319,38 +361,35 @@ elif algorithm == 'all':
         y.append(comb[i][1][1])        
         
         if comb[i][0][2] not in labels:
-                plt.annotate(comb[i][0][2], (x[0], y[0]),fontsize=16, horizontalalignment='left', verticalalignment='top') 
-            
+                plt.annotate(comb[i][0][2], (x[0], y[0]),fontsize=16,
+                             horizontalalignment='left',
+                             verticalalignment='top')      
         labels.append(comb[i][0][2])        
         
         if comb[i][1][2] not in labels:
-                plt.annotate(comb[i][1][2], (x[1], y[1]),fontsize=16, horizontalalignment='left', verticalalignment='top') 
-            
+                plt.annotate(comb[i][1][2], (x[1], y[1]),fontsize=16,
+                             horizontalalignment='left',
+                             verticalalignment='top') 
         labels.append(comb[i][1][2])
         
         ax.plot(x,y, c=np.random.rand(3,1), zorder=1)
     
     ax.scatter(date,base, s=200, zorder=2)
-    
     plt.savefig('all_alignPairs.png', dpi=300)
         
-            
-
-#        
-#    #-----------------------Making files---------------------------------------------
-#    align = open('align.in', 'w+')
-#    for k in range(len(groups)):
-#        for line in groups[k]:
-#            align.write(stem + line[0] + end + ':' + stem + line[1] + end + ':'
-#            + master + '\n')   
-#    align.close()
-#
-#
-#    intf = open('intf.in', 'w')
-#    for k in range(len(groups)):
-#        for line in groups[k]:
-#            intf.write(stem + line[0] + end + ':' + stem + line[1] + end + '\n')
-#    intf.close()
+        
+    #_________________________Making files_____________________________________
+    align = open('align.in', 'w')
+    intf = open('intf.in', 'w')
+    for pair in comb:
+        align.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + ':'
+        + master + '\n')  
+        intf.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + '\n')
+    align.close()       
+    intf.close()
+    
+else:
+    sys.exit('makeInoutFiles Error: Please use valid Algorithm (baseline, leapfrog, all)')
 #    
 #
 ##
