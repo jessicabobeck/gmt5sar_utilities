@@ -1,58 +1,41 @@
 # -*- coding: utf-8 -*-
 """
 @author: Jessica Bobeck
-Utility for creating align.in and intf.in files.
-
-IN:
-	table - table.gmt file (found in raw dir)
-	master - name of master or super master that image will align too
-	threshold - threshold for small baseline subsets, set to 0 if you do not want a  threshold.
-                  It will separate out subgroups based on your threshhold and create all possible
-                  combinations for that subset.
-	sat - satellite (ALOS, ENVI, ERS, S1A)
-     algorithm - all: every possible combination (least selective)
-                 baseline: pairs matched by baseline theshold (moderatly selective)
-                 leapfrog: GMT5SAR recommended algorithm that splits pairs up
-                           into primary, secondary and tertiary pairs (highly selective)
-     
-OUT:
-	intf.in
-     align.in
-
-USAGE:
-
-	Use from command line.It can be put in a .csh or .sh file. For example:
-
-	#linking table.gmt file
-		ln -s raw/baseline_table.dat .
-	#making align.in
-		python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A 10000 ALOS baseline prim_base=10000
-	#running align script
-		align_batch.csh ALOS align.in
-	#running intf script
-		intf_batch.csh ALOS intf.in intf.config
+@date: Nov. 2016
+@purpose: Utility for making align.in and intf.in files for GMT5SAR
 """
 import itertools as it
 import sys
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import numpy as np
+import argparse
 
 
+parser = argparse.ArgumentParser(description='Utility for creating align.in and intf.in files.')
+parser.add_argument('table', help='GMT Baseline Table (ex. baseline_table.dat)', type=str)
+parser.add_argument('master', help='Name of master or super master that image will align to', type=str)
+parser.add_argument('sat', type=str, help='Satellite Type', choices=['ALOS', 'ERS', 'ENVI'])
+parser.add_argument('algorithm', type=str, help='Algorithm, specific descriptions are found in README', choices=['baseline', 'leapfrog', 'all'])
+parser.add_argument('prim_base', type=int, help='Baseline Threshold. Default=800 [m]. (Primary Baseline threshold for leap frog algorithm)' ,default=800)
+parser.add_argument('--py', help='Primary Year Threshold. Default=2 [y]. Required for leapfrog algorithm only.', type=int, default=2)
+parser.add_argument('--sb', help='Secondary Year Threshold. Default=1500 [m]. Required for leapfrog algorithm only.', type=int, default=1500)
+parser.add_argument('--sy', type=int, help='Secondary Year Threshold. Default=2 [y]. Required for leapfrog algorithm only.', default=2)
+parser.add_argument('--tb', type=int, help='Tertiary Baseline Threshold. Default=5000 [m] Required for leapfrog algorithm only.', default=5000)
+parser.add_argument('--ty', type=int, help='Tertiary Year Threshold. Default=1 [y]. Required for leapfrog algorithm only.', default=1)
 
-table = 'baseline_table.dat'
-master = 'IMG-HH-ALPSRP052541220-H1.0__A'
-sat = 'ALOS'
-algorithm = 'baseline'
-prim_base = 10000
-prim_year =2
-sec_base = 15000
-sec_year = 2
-ter_base = 50000
-ter_year = 1
+args = parser.parse_args()
 
-#def makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
-     #              sec_base=1500, sec_year=1, ter_base=500, ter_year=2):
+table = args.table
+master = args.master
+sat = args.sat
+algorithm = args.algorithm
+prim_base = args.prim_base
+prim_year = args.py
+sec_base = args.sb
+sec_year = args.sy
+ter_base = args.tb
+ter_year = args.ty
 
 '''*****************************-sat type-**********************************'''
 if sat == 'ALOS':
@@ -388,12 +371,14 @@ elif algorithm == 'all':
     
 else:
     sys.exit('makeInoutFiles Error: Please use valid Algorithm (baseline, leapfrog, all)')
+
+
+
+#if __name__ == '__main__':
+#    table= str(sys.argv[1])
+#    master=str(sys.argv[2])
+#    sat=int(sys.argv[3])
+#    algorithm=str(sys.argv[4])
 #    
-#
-##
-##if __name__ == '__main__':
-##    table= str(sys.argv[1])
-##    master=str(sys.argv[2])
-##    threshold=int(sys.argv[3])
-##    sat=str(sys.argv[4])
-##    makeInputFiles(table, master, threshold, sat)
+#    makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
+#                   sec_base=1500, sec_year=1, ter_base=500, ter_year=2):
