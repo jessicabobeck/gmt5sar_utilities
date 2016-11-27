@@ -138,13 +138,16 @@ if algorithm == 'baseline':
     align = open('align.in', 'w')
     intf = open('intf.in', 'w')
     
+    out = []
     for i in range(len(comb)):
         for pair in comb[i]:
             align.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + ':' + master + '\n')  
             intf.write(stem + pair[0][2] + end + ':' + stem + pair[1][2] + end + '\n')
+            out.append(pair)
     align.close()       
     intf.close()
     
+    print 'Number of pairs generated: ', len(out)  
     
     
               
@@ -314,7 +317,8 @@ elif algorithm == 'leapfrog':
     align.close()       
     intf.close()
 
-
+    print 'Number of pairs generated: ', len(check)  
+    
 #---------------------------------ALL------------------------------------------
 elif algorithm == 'all':
     comb = list(set(it.combinations(data, 2)))
@@ -357,7 +361,8 @@ elif algorithm == 'all':
     
     ax.scatter(date,base, s=200, zorder=2)
     plt.savefig('all_alignPairs.png', dpi=300)
-        
+    
+          
         
     #_________________________Making files_____________________________________
     align = open('align.in', 'w')
@@ -369,16 +374,11 @@ elif algorithm == 'all':
     align.close()       
     intf.close()
     
+    print 'Number of pairs generated: ', len(comb)  
+    
+    
+    
 else:
     sys.exit('makeInoutFiles Error: Please use valid Algorithm (baseline, leapfrog, all)')
 
 
-
-#if __name__ == '__main__':
-#    table= str(sys.argv[1])
-#    master=str(sys.argv[2])
-#    sat=int(sys.argv[3])
-#    algorithm=str(sys.argv[4])
-#    
-#    makeInputFiles(table, master, sat, algorithm, prim_base=800, prim_year=2,
-#                   sec_base=1500, sec_year=1, ter_base=500, ter_year=2):
