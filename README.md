@@ -1,21 +1,32 @@
 # gmt5sar_utilities
+
+### makeInputFiles.py
+
 Utility for creating align.in and intf.in files.
 
-IN:
-	table - table.gmt file (found in raw dir)
-	master - name of master or super master that image will align too
+##### IN:
+
+	`table` - baselline_table.dat file (found in raw dir)
+	
+	`master` - name of master or super master that image will align too
+	
+	`sat` - satellite (ALOS, ENVI, ERS) *Note: Only ALOS is working presently*
+	
+	`algorithm` - all: every possible combination (least selective)
+	
+                 baseline: pairs matched by baseline theshold (moderatly selective)
+		 
+                 leapfrog: GMT5SAR recommended algorithm that splits pairs up into primary, secondary and tertiary pairs (highly selective)
+     
 	threshold - threshold for small baseline subsets, set to 0 if you do not want a  threshold.
                   It will separate out subgroups based on your threshhold and create all possible
                   combinations for that subset.
-	sat - satellite (ALOS, ENVI, ERS, S1A)
-     algorithm - all: every possible combination (least selective)
-                 baseline: pairs matched by baseline theshold (moderatly selective)
-                 leapfrog: GMT5SAR recommended algorithm that splits pairs up
-                           into primary, secondary and tertiary pairs (highly selective)
-     
-OUT:
-	intf.in
-	align.in
+	
+
+##### OUT:
+	`intf.in`
+	
+	`align.in`
 
 USAGE:
 
