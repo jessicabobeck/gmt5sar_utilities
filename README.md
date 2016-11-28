@@ -1,5 +1,5 @@
 # gmt5sar_utilities
-
+----------------------------------------------------------------------------------------------------------------------------------------
 ### makeInputFiles.py
 
 Utility for creating align.in and intf.in files. You can also type -h or --help in the command line
@@ -62,3 +62,4 @@ Use from command line.It can be put in a .csh or .sh file (also see `example.csh
 
 	intf_batch.csh ALOS intf.in intf.config
 ```
+----------------------------------------------------------------------------------------------------------------------------------------
