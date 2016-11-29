@@ -6,6 +6,8 @@
 """
 import itertools as it
 import sys
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import numpy as np
