@@ -31,9 +31,9 @@ Utility for creating align.in and intf.in files. You can also type -h or --help 
 `--ty` - Tertiary Year Threshold. Default=1 [y]. Required for leapfrog algorithm only.
 
 ##### OUT:
-	`intf.in`
+`intf.in`
 	
-	`align.in`
+`align.in`
 
 ##### USAGE:
 
@@ -46,13 +46,13 @@ Use from command line.It can be put in a .csh or .sh file (also see `example.csh
 #making align.in
 
 	#baseline algorithm
-	python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A 10000 ALOS baseline prim_base=10000
+	python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A ALOS baseline prim_base=10000
 	
 	#leapfrog algorithm
-	python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A 10000 ALOS leapfrog prim_base=10000 --py 2 --sb 15000 --sy 2 --tb 50000 --ty 3
+	python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A ALOS leapfrog prim_base=10000 --py 2 --sb 15000 --sy 2 --tb 50000 --ty 3
 	
 	#all algorithm
-	python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A 10000 ALOS all prim_base=10000
+	python makeInputFiles.py baseline_table.dat IMG-HH-ALPSRP052541220-H1.0__A ALOS all prim_base=10000
 
 #running align script
 
