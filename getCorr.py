@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
+@author: Jessica Bobeck
+@date: Nov. 2016
+@purpose: Filtering out bad correlation files.
 """
 import os
 import shutil
