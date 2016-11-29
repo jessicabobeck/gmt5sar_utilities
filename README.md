@@ -35,7 +35,7 @@ Utility for creating align.in and intf.in files. You can also type -h or --help 
 	
 `align.in` - formated align.in file for align_batch.csh
 
-`[algorithm]Pairs.png` - Plot of all the pairs and ids.
+`[algorithm]_alignPairs.png` - Plot of all the pairs and ids.
 ##### USAGE:
 
 Use from command line.It can be put in a .csh or .sh file (also see `example.csh`). For example:
