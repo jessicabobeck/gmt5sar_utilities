@@ -307,7 +307,7 @@ elif algorithm == 'leapfrog':
         for j in range(len(secondary[i])):
             align.write(stem + primary[i][2] + end + ':' + stem + secondary[i][j][2] + end + ':'
             + master + '\n')  
-            intf.write(stem + primary[i][2] + end + ':' + stem + secondary[i][j][2] + '\n')
+            intf.write(stem + primary[i][2] + end + ':' + stem + secondary[i][j][2] + end + '\n')
             if secondary[i][j] not in check:
                 check.append(secondary[i][j])
                 
@@ -318,8 +318,7 @@ elif algorithm == 'leapfrog':
             
     align.close()       
     intf.close()
-
-    print 'Number of pairs generated: ', len(check)  
+  
     
 #---------------------------------ALL------------------------------------------
 elif algorithm == 'all':
