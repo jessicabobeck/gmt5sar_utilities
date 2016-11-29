@@ -31,10 +31,11 @@ Utility for creating align.in and intf.in files. You can also type -h or --help 
 `--ty` - Tertiary Year Threshold. Default=1 [y]. Required for leapfrog algorithm only.
 
 ##### OUT:
-`intf.in`
+`intf.in` - formatted intf.in file for intf_batch.csh
 	
-`align.in`
+`align.in` - formated align.in file for align_batch.csh
 
+`[algorithm]Pairs.png` - Plot of all the pairs and ids.
 ##### USAGE:
 
 Use from command line.It can be put in a .csh or .sh file (also see `example.csh`). For example:
